@@ -11,6 +11,7 @@ public class IgniteApplication {
         Ignite ignite = IgniteClientStartup.run();
         IgniteServices svcs = ignite.services();
         svcs.deployClusterSingleton("overseerSingleton", new OverseerService());
+
     }
 
 
