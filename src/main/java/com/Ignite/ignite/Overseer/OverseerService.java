@@ -16,6 +16,8 @@ import org.apache.ignite.services.ServiceContext;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+//https://apacheignite.readme.io/v2.3/docs/service-configuration
+
 public class OverseerService implements Service, Overseer {
     @IgniteInstanceResource
     private Ignite ignite;
@@ -26,10 +28,9 @@ public class OverseerService implements Service, Overseer {
     private ResultSetter _resultSetter;
     //endregion
 
-    OverseerService() {
-        _result = ignite.atomicLong("wordsCalculationResult", 0, true);
-        _segmentGetter = new DummySegmentGetter();
-        _resultSetter = new DummyResultSetter();
+    public OverseerService() {
+        this._segmentGetter = new DummySegmentGetter();
+        this._resultSetter = new DummyResultSetter();
     }
 
 
@@ -37,13 +38,13 @@ public class OverseerService implements Service, Overseer {
     public void oversee() {
 
         List<String> segment = null;
-        segment = _segmentGetter.getSegment();
-        IgniteCompute compute = ignite.compute();
+        segment = this._segmentGetter.getSegment();
+        IgniteCompute compute = this.ignite.compute();
 
         while (segment.size() > 0) {
             long cnt = compute.execute(WordCountTask.class, segment);
-            _result.addAndGet(cnt);
-            segment = _segmentGetter.getSegment();
+            this._result.addAndGet(cnt);
+            segment = this._segmentGetter.getSegment();
         }
 
         _resultSetter.setResult(_result.get());
@@ -56,6 +57,7 @@ public class OverseerService implements Service, Overseer {
 
     @Override
     public void init(ServiceContext serviceContext) throws Exception {
+        this._result = ignite.atomicLong("wordsCalculationResult", 0, true);
         System.out.println("Service was initialized: " + serviceContext.name());
     }
 
@@ -64,15 +66,15 @@ public class OverseerService implements Service, Overseer {
         System.out.println("Executing distributed service: " + serviceContext.name());
 
         ExecutorService exec = ignite.executorService();
-
-        for (final String word : "Print words using runnable".split(" ")) {
-            // Execute runnable on some node.
-            exec.submit(new IgniteRunnable() {
-                @Override
-                public void run() {
-                    System.out.println(">>> Printing '" + word + "' on this node from grid job.");
-                }
-            });
-        }
+//        TODO: Execute tasks here?
+//        for (final String word : "Print words using runnable".split(" ")) {
+//            // Execute runnable on some node.
+//            exec.submit(new IgniteRunnable() {
+//                @Override
+//                public void run() {
+//                    System.out.println(">>> Printing '" + word + "' on this node from grid job.");
+//                }
+//            });
+//        }
     }
 }

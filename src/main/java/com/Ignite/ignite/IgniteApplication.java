@@ -10,7 +10,7 @@ public class IgniteApplication {
     public static void main(String[] args) throws IOException {
         Ignite ignite = IgniteClientStartup.run();
         IgniteServices svcs = ignite.services();
-        svcs.deployClusterSingleton("overwatcherSingleton", new OverseerService());
+        svcs.deployClusterSingleton("overseerSingleton", new OverseerService());
     }
 
 
