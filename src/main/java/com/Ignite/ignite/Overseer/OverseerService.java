@@ -1,7 +1,13 @@
-package com.Ignite.ignite.Overwatcher;
+package com.Ignite.ignite.Overseer;
 
+import com.Ignite.ignite.ResultSetter.DummyResultSetter;
+import com.Ignite.ignite.ResultSetter.ResultSetter;
+import com.Ignite.ignite.SegmentGetter.DummySegmentGetter;
+import com.Ignite.ignite.SegmentGetter.SegmentGetter;
+import com.Ignite.ignite.WordCounter.WordCountTask;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteAtomicLong;
+import org.apache.ignite.IgniteCompute;
 import org.apache.ignite.lang.IgniteRunnable;
 import org.apache.ignite.resources.IgniteInstanceResource;
 import org.apache.ignite.services.Service;
@@ -10,18 +16,37 @@ import org.apache.ignite.services.ServiceContext;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-public class OverwatcherService implements Service, Overwatcher {
+public class OverseerService implements Service, Overseer {
     @IgniteInstanceResource
     private Ignite ignite;
     private IgniteAtomicLong _result;
-    private String segmentName;
+
+    //region visitors
     private SegmentGetter _segmentGetter;
+    private ResultSetter _resultSetter;
+    //endregion
+
+    OverseerService() {
+        _result = ignite.atomicLong("wordsCalculationResult", 0, true);
+        _segmentGetter = new DummySegmentGetter();
+        _resultSetter = new DummyResultSetter();
+    }
 
 
     @Override
-    public void overwatch() {
+    public void oversee() {
 
-        List<String> segment = _segmentGetter.getSegment();
+        List<String> segment = null;
+        segment = _segmentGetter.getSegment();
+        IgniteCompute compute = ignite.compute();
+
+        while (segment.size() > 0) {
+            long cnt = compute.execute(WordCountTask.class, segment);
+            _result.addAndGet(cnt);
+            segment = _segmentGetter.getSegment();
+        }
+
+        _resultSetter.setResult(_result.get());
     }
 
     @Override
@@ -31,11 +56,6 @@ public class OverwatcherService implements Service, Overwatcher {
 
     @Override
     public void init(ServiceContext serviceContext) throws Exception {
-        this._result = ignite.atomicLong(
-                serviceContext.name(),  //"wordsCalculationResult",
-                0,
-                true
-        );
         System.out.println("Service was initialized: " + serviceContext.name());
     }
 
