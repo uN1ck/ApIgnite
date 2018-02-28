@@ -27,7 +27,7 @@ public class OverseerService implements Service, Overseer {
     //endregion
 
     public OverseerService() {
-        _result = ignite.atomicLong("wordsCalculationResult", 0, true);
+
         _segmentGetter = new DummySegmentGetter();
         _resultSetter = new DummyResultSetter();
     }
@@ -56,23 +56,27 @@ public class OverseerService implements Service, Overseer {
 
     @Override
     public void init(ServiceContext serviceContext) throws Exception {
+        _result = ignite.atomicLong("wordsCalculationResult", 0, true);
         System.out.println("Service was initialized: " + serviceContext.name());
     }
 
     @Override
     public void execute(ServiceContext serviceContext) throws Exception {
         System.out.println("Executing distributed service: " + serviceContext.name());
-
-        ExecutorService exec = ignite.executorService();
-
-        for (final String word : "Print words using runnable".split(" ")) {
-            // Execute runnable on some node.
-            exec.submit(new IgniteRunnable() {
-                @Override
-                public void run() {
-                    System.out.println(">>> Printing '" + word + "' on this node from grid job.");
-                }
-            });
-        }
+        //TODO: Execute here! (Может сюда нао подсунуть ВордКоунтДжоб? и тут тоже вырасет шедуллер?
+        this.oversee();
+//        ExecutorService exec = ignite.executorService();
+//        exec.execute(WordCountTask.class,segment);
+//
+//
+//        for (final String word : "Print words using runnable".split(" ")) {
+//            // Execute runnable on some node.
+//            exec.submit(new IgniteRunnable() {
+//                @Override
+//                public void run() {
+//                    System.out.println(">>> Printing '" + word + "' on this node from grid job.");
+//                }
+//            });
+//        }
     }
 }
