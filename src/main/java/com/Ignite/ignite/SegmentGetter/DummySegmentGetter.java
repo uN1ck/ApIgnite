@@ -1,6 +1,7 @@
 package com.Ignite.ignite.SegmentGetter;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
@@ -8,19 +9,25 @@ import java.util.ArrayList;
 
 public class DummySegmentGetter implements SegmentGetter {
 
-    public DummySegmentGetter() {
+    private int _segmentLinesCount;
+    BufferedReader _br;
 
+    public DummySegmentGetter(int segmentLinesCount) {
+        _segmentLinesCount = segmentLinesCount;
+        String _path = System.getProperty("user.dir") + "/localfile.txt";
+        try {
+            _br = new BufferedReader(new FileReader(_path));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public List<String> getSegment() {
-        String inFile = "localfile.txt";
-        BufferedReader br = null;
         ArrayList<String> segment = new ArrayList<String>();
         try {
-            br = new BufferedReader(new FileReader(inFile));
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = _br.readLine()) != null && segment.size() < _segmentLinesCount) {
                 segment.add(line);
             }
         } catch (IOException e) {

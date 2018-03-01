@@ -14,7 +14,6 @@ import org.apache.ignite.services.Service;
 import org.apache.ignite.services.ServiceContext;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 public class OverseerService implements Service, Overseer {
     @IgniteInstanceResource
@@ -26,12 +25,10 @@ public class OverseerService implements Service, Overseer {
     private ResultSetter _resultSetter;
     //endregion
 
-    public OverseerService() {
-
-        _segmentGetter = new DummySegmentGetter();
-        _resultSetter = new DummyResultSetter();
+    public OverseerService(SegmentGetter getter, ResultSetter setter) {
+        _segmentGetter = getter;
+        _resultSetter = setter;
     }
-
 
     @Override
     public void oversee() {
