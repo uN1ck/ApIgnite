@@ -36,7 +36,7 @@ public class OverseerService implements Service, Overseer {
         List<String> segment = null;
         segment = _segmentGetter.getSegment();
         IgniteCompute compute = ignite.compute();
-
+        System.out.println(segment);
         while (segment.size() > 0) {
             long cnt = compute.execute(WordCountTask.class, segment);
             _result.addAndGet(cnt);
